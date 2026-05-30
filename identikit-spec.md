@@ -59,6 +59,7 @@ What made it *feel* repo-specific (and what `identikit` fixes):
 - A `discover` command for template authors to generate the per-repo config.
 - A `doctor` command auditing that no "from" identity values leak post-rebrand.
 - Field-agnostic identity (works for any set of identity fields, not a fixed six).
+- Optional **feature/variant selection** during `init`, delegated to the `toggle` binary (§9.5).
 
 ### Out of scope (deliberately)
 - **Template updates / propagation.** `identikit` is one-shot: the template→project relationship
@@ -79,6 +80,7 @@ What made it *feel* repo-specific (and what `identikit` fixes):
 | **D2a. "From" identity = explicit config values** | Each old value lives in `identikit.toml` `[identity.*].value`; invariant across all instantiation modes. | A fork's `origin` *misreports* the old owner; clone-reinit and ZIP have no origin at all. The "from" side must not be derived from the instance's git state or it would fail to replace values (e.g. leave `smorinlabs` in a fork). |
 | **D2b. "To" defaults = conditional on git state** | Pre-filled prompt defaults derive from `origin` + `git config`, guarded. | Best UX for the common template-button case; safe on the edge modes. Guards: skip when `origin` matches the template (fork), and when the derived "to" repo name would collide with the "from" repo name; fall back to `git config` / empty when origin is absent. Always overridable; `--config` bypasses entirely. |
 | **D3. Post-init split out of core** | Declarative GitHub config → Terraform/OpenTofu module shipped in the template. SaaS trust → a thin optional walkthrough. Core does rebrand only. | Lifecycle mismatch: rebrand is one-shot + destructive; service config is declarative + idempotent. ~80% of the source `post_init.py` is designed out. See §9. |
+| **D4. Feature/variant gating via `toggle`** | `identikit.toml` declares `[features]`; `init` invokes the [`toggle`](https://github.com/smorin/toggle) binary after rebrand to activate chosen variants, **skipping gracefully** (with a note) if `toggle` is absent. | Adds a reversible, sub-file dimension the whole-file manifest can't express, while preserving the live-CI-green property (a commented-out variant is still a valid file). Leverages the existing tool rather than reimplementing; the graceful skip keeps the Python↔Rust coupling optional. See §9.5. |
 
 ---
 
@@ -153,6 +155,16 @@ reason = "guard CI is template-only"
 path    = "uv.lock"
 command = ["uv", "lock"]
 
+# ── features: optional variant selection, applied via the `toggle` binary (D4, §9.5).
+[features.db]
+variants = ["sqlite", "postgres"]     # `toggle` group:variant IDs present in the source
+prompt   = "database driver?"
+default  = "sqlite"
+[features.codecov]
+variants = ["on", "off"]
+prompt   = "enable the Codecov upload job?"
+default  = "off"
+
 # ── guard + prune: build-tool-agnostic config (wiring is a plugin, §5.4)
 [guard]
 skip_if_origin = ["smorinlabs/py-launch-blueprint"]
@@ -175,6 +187,8 @@ paths = ["identikit/", ".github/workflows/blueprint-guard.yml"]
    ├─▶ preview       print plan · --dry-run stops here · else confirm
    ├─▶ apply         remove → replace → rename → regenerate
    │                 (any failure → tell user: `git checkout . && git clean -fd`)
+   ├─▶ features      if [features] present: `toggle -S <chosen variant>` per group (D4)
+   │                 (graceful skip + note if the `toggle` binary is absent)
    ├─▶ marker        write record (identity used · engine version · date)
    └─▶ lockfiles     uv lock · bun install (regenerate, never hand-edit)
 ```
@@ -329,6 +343,47 @@ core.
 The deep reason for the split: **rebrand is one-shot and destructive** (cannot be re-run), but
 **service config is declarative and idempotent** (you *want* to re-run it as the project evolves).
 Opposite lifecycles → different tools.
+
+### 9.5 Feature/variant gating via `toggle` (D4)
+
+Identity rewrite is whole-file and all-or-nothing (replace/rename/remove/regenerate). It cannot
+express "this template ships with sqlite active and postgres available; let the new project pick."
+That **reversible, sub-file feature dimension** is owned by [`toggle`](https://github.com/smorin/toggle)
+— a Rust CLI that comments/uncomments marked blocks in place:
+
+```python
+# toggle:start ID=db:sqlite
+import sqlite3
+# toggle:end ID=db:sqlite
+
+# toggle:start ID=db:postgres
+# import psycopg2
+# toggle:end ID=db:postgres
+```
+
+`toggle -S db:postgres <file>` activates the postgres variant and comments every other `db:*`.
+Because a commented-out variant is still a **valid, CI-green file**, this preserves identikit's
+no-tokens / live-demo property.
+
+Integration (D4): the template author marks optional blocks with `toggle` markers and declares them
+in `identikit.toml` `[features.*]`. After the rebrand `apply` step, `identikit init` prompts for each
+feature's variant (or reads them from `--config`) and invokes the `toggle` binary to activate the
+choices. If `toggle` is not installed, `init` **skips the step and prints a note** rather than
+failing — the Python↔Rust coupling is optional, so identikit stays fully usable via plain `uvx`.
+
+This is the fourth and final lifecycle in the decomposition:
+
+```
+  identikit core ... rewrite IDENTITY         one-shot   · DESTRUCTIVE  (can't re-run)
+  toggle ........... enable/disable FEATURES  idempotent · REVERSIBLE   (flip any time)
+  Terraform ........ declarative GH CONFIG    idempotent · stateful
+  walkthrough ...... one-time SaaS TRUST      interactive · one-shot
+```
+
+Open sub-items (build-time): whether `init` calls the `toggle` binary directly or `identikit`
+re-implements marker toggling natively (chosen: call the binary, per D4 — leverage, don't
+reimplement); how `--config` encodes feature choices; and `doctor` reporting which variants are
+active.
 
 ---
 
