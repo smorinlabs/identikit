@@ -1,0 +1,274 @@
+# identikit.toml for smorinlabs/py-launch-blueprint
+#
+# Translated from py-launch-blueprint/init/manifest.toml — the real migration
+# scope, expressed in identikit's config. Drop this at the repo root and run
+# `identikit init` to replace the bespoke init/ system.
+#
+# Regenerate/verify the [[replace]] file lists with:  identikit discover --summary
+
+# ── identity ─────────────────────────────────────────────────────────────────
+
+[identity.package_name]
+value    = "py_launch_blueprint"
+validate = "python_identifier"
+prompt   = "Python package name (snake_case)"
+derive   = "repo_name|snake"
+
+[identity.repo_name]
+value    = "py-launch-blueprint"
+validate = "repo_name"
+prompt   = "repo name (kebab-case)"
+derive   = "origin.repo"
+
+[identity.command_name]
+value    = "py-projects"
+validate = "command_name"
+prompt   = "CLI command name (kebab-case)"
+derive   = "repo_name"
+
+[identity.owner]
+value    = "smorinlabs"
+validate = "github_owner"
+prompt   = "GitHub owner (user or org)"
+derive   = "origin.owner"
+
+[identity.author]
+value    = "Steve Morin"
+validate = ""
+prompt   = "author name"
+derive   = "git.user.name"
+
+[identity.email]
+value    = "steve.morin@gmail.com"
+validate = "email"
+prompt   = "author email"
+derive   = "git.user.email"
+
+# ── replace: structured (TOML — tomlkit, comment-preserving) ─────────────────
+
+[[replace]]
+field = "package_name"
+files = ["pyproject.toml"]
+mode  = "structured"
+
+[[replace]]
+field = "repo_name"
+files = [".gitleaks.toml", "pyproject.toml"]
+mode  = "structured"
+
+[[replace]]
+field = "command_name"
+files = ["pyproject.toml"]
+mode  = "structured"
+
+[[replace]]
+field = "owner"
+files = ["pyproject.toml"]
+mode  = "structured"
+
+[[replace]]
+field = "email"
+files = ["pyproject.toml"]
+mode  = "structured"
+
+[[replace]]
+field = "author"
+files = [".taplo.toml", "pyproject.toml"]
+mode  = "structured"
+
+# ── replace: text (prose, YAML, JSON, docs) ──────────────────────────────────
+
+[[replace]]
+field = "package_name"
+files = [
+  ".github/workflows/bandit.yml",
+  ".github/workflows/ci.yml",
+  ".vscode/launch.json",
+  ".windsurfrules",
+  "AGENTS.md",
+  "CLAUDE.md",
+  "Justfile",
+  "README.md",
+  "docs/source/conf.py",
+  "docs/source/index.md",
+  "docs/source/reference/project_structure.md",
+  "docs/source/reference/versioning.md",
+  "docs/source/tasks/debugging_configuration.md",
+  "docs/source/tasks/managing_dependencies.md",
+  "docs/source/tasks/setting_up_development.md",
+  "docs/source/tasks/type_checking_code.md",
+  "docs/source/tasks/using_ci_cd.md",
+  "docs/source/tools/github_actions.md",
+  "docs/source/tutorials/full_project_setup.md",
+  "lefthook.yml",
+  "py_launch_blueprint/__init__.py",
+  "py_launch_blueprint/projects.py",
+  "pyrightconfig.json",
+  "release-please-config.json",
+  "tests/test_api.py",
+  "tests/test_cli.py",
+  "tests/test_config.py",
+  "tests/test_version_consistency.py",
+]
+mode  = "text"
+
+[[replace]]
+field = "repo_name"
+files = [
+  ".devcontainer/devcontainer.json",
+  ".github/CONTRIBUTING.md",
+  ".github/ISSUE_TEMPLATE/config.yml",
+  ".github/codeql/codeql-config.yml",
+  "AGENTS.md",
+  "EXAMPLECLI.md",
+  "Justfile",
+  "README.md",
+  "docs/source/_templates/base.html",
+  "docs/source/conf.py",
+  "docs/source/contributing/index.md",
+  "docs/source/index.md",
+  "docs/source/reference/configuration_files.md",
+  "docs/source/reference/project_structure.md",
+  "docs/source/tasks/contributing_code.md",
+  "docs/source/tasks/setting_up_development.md",
+  "docs/source/tasks/type_checking_code.md",
+  "docs/source/tools/github_actions.md",
+  "docs/source/tools/justfiles.md",
+  "docs/source/tutorials/full_project_setup.md",
+  "package.json",
+]
+mode  = "text"
+
+[[replace]]
+field = "command_name"
+files = [
+  ".github/CONTRIBUTING.md",
+  ".windsurfrules",
+  "EXAMPLECLI.md",
+  "Justfile",
+  "README.md",
+  "docs/source/index.md",
+  "docs/source/reference/cli_reference.md",
+  "docs/source/tasks/setting_up_development.md",
+]
+mode  = "text"
+
+[[replace]]
+field = "owner"
+files = [
+  ".github/CONTRIBUTING.md",
+  ".github/ISSUE_TEMPLATE/config.yml",
+  "EXAMPLECLI.md",
+  "Justfile",
+  "README.md",
+  "docs/source/conf.py",
+  "docs/source/contributing/index.md",
+  "docs/source/index.md",
+  "docs/source/reference/configuration_files.md",
+  "docs/source/tasks/setting_up_development.md",
+  "docs/source/tasks/type_checking_code.md",
+  "docs/source/tools/github_actions.md",
+  "docs/source/tools/justfiles.md",
+  "docs/source/tutorials/full_project_setup.md",
+]
+mode  = "text"
+
+[[replace]]
+field = "author"
+files = [
+  ".github/FUNDING.yml",
+  ".github/ISSUE_TEMPLATE/01-feature-request.yml",
+  ".github/ISSUE_TEMPLATE/02-documentation-request.yml",
+  ".github/ISSUE_TEMPLATE/03-bug-report.yml",
+  ".github/ISSUE_TEMPLATE/config.yml",
+  ".github/workflows/dependency-review.yml",
+  ".github/workflows/manual-pr-security-scan.yml",
+  ".readthedocs.yaml",
+  "LICENSE",
+  "docs/source/_templates/base.html",
+  "docs/source/conf.py",
+  "py_launch_blueprint/__init__.py",
+  "py_launch_blueprint/projects.py",
+  "tests/__init__.py",
+  "tests/test_api.py",
+  "tests/test_cli.py",
+  "tests/test_config.py",
+  "tests/test_version_consistency.py",
+]
+mode  = "text"
+
+# NOTE: CHANGELOG.md carries 96× repo_name + 96× owner from historical release
+# entries that must NOT be rewritten — deliberately omitted (would be a [[remove]]
+# / reset in a real migration, not a replace). Same reasoning the source manifest
+# flags. Audit with `identikit doctor` and reset the changelog separately.
+
+# ── rename ───────────────────────────────────────────────────────────────────
+
+[[rename]]
+from = "assets/images/logos/py_launch_blueprint_logo_1024x1024.png"
+to   = "assets/images/logos/{package_name}_logo_1024x1024.png"
+
+[[rename]]
+from = "assets/images/logos/py_launch_blueprint_logo_150x150.png"
+to   = "assets/images/logos/{package_name}_logo_150x150.png"
+
+[[rename]]
+from = "assets/images/logos/py_launch_blueprint_logo_100x100.png"
+to   = "assets/images/logos/{package_name}_logo_100x100.png"
+
+[[rename]]
+from = "docs/source/_static/py_launch_blueprint_logo_100x100.png"
+to   = "docs/source/_static/{package_name}_logo_100x100.png"
+
+[[rename]]
+from = "py_launch_blueprint"
+to   = "{package_name}"
+
+# ── remove (template-only / project-specific artifacts) ──────────────────────
+
+[[remove]]
+path   = ".github/workflows/blueprint-guard.yml"
+reason = "guard CI is template-only"
+
+[[remove]]
+path   = ".github/workflows/update-contributors.yml"
+reason = "contributor automation is project-specific"
+
+[[remove]]
+path   = ".contributors.yml"
+reason = "contributor config is project-specific"
+
+[[remove]]
+path   = ".contributors.jsonl"
+reason = "contributor state is project-specific"
+
+[[remove]]
+path   = "CONTRIBUTORS.md"
+reason = "generated contributors file is project-specific"
+
+[[remove]]
+path   = "init"
+reason = "the bespoke init/ system is replaced by identikit"
+
+[[remove]]
+path   = "skill"
+reason = "agent skill is template-only tooling"
+
+# ── regenerate (lockfiles embed the project name) ────────────────────────────
+
+[[regenerate]]
+path    = "uv.lock"
+command = ["uv", "lock"]
+
+[[regenerate]]
+path    = "bun.lock"
+command = ["bun", "install"]
+
+# ── guard + prune ────────────────────────────────────────────────────────────
+
+[guard]
+skip_if_origin = ["smorinlabs/py-launch-blueprint", "smorin/py-launch-blueprint"]
+block          = ["build", "publish"]
+
+[prune]
+paths = ["identikit.toml", "guard.sh"]

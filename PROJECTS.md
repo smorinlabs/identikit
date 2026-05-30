@@ -9,9 +9,7 @@ graceful `toggle` feature gating, and the five instantiation modes handled.
 
 **Out of scope (this version)**
 - Terraform module + SaaS-trust walkthrough (post-init; D3 — designed out of core)
-- `structured`-mode rewriters (tomlkit-preserving); v0.1 treats structured as text (safe for
-  distinctive identity values) — seam exists for a follow-up
-- Publishing to PyPI
+- YAML/JSON structured rewriters (only TOML is structured today; others use text)
 
 ### Tests & Tasks
 - [x] [P01-T01] Scaffold package (pyproject `uv_build` + `src/identikit/`, just/make, pytest)
@@ -29,7 +27,18 @@ graceful `toggle` feature gating, and the five instantiation modes handled.
 - [x] [P01-TS07] Tests: preflight, dry-run, headless + interactive, marker, version
 - [x] [P01-TS08] Integration: one fixture per instantiation mode (template/gh/clone/fork/zip)
 - [x] [P01-T08] `guard.sh` — warn/block modes, config-driven skip (+ subprocess tests)
-- [x] Regression Test Status: `just all` green — 86 tests, ~91% coverage
+- [x] [P01-T09] `rewriters.py` — structured tomlkit rewriter (comment-preserving), wired into engine
+- [x] [P01-T10] `examples/py-launch-blueprint/identikit.toml` — real dogfood config (+ coherence test)
+- [x] [P01-T11] CI + OIDC trusted publishing + release-please (mirrors py-launch-blueprint)
+- [x] Regression Test Status: `just all` green — 92 tests, ~92% coverage; actionlint + yamllint clean
+
+## [ ] Project P02: Publish identikit 0.1.0 to PyPI (v0.1.0)
+**Goal**: First public release via the new pipeline.
+### Tests & Tasks
+- [ ] [P02-T01] Configure PyPI trusted publisher (owner=smorinlabs, repo=identikit, workflow=publish.yml, env=pypi)
+- [ ] [P02-T02] Create the `pypi` GitHub environment
+- [ ] [P02-T03] Set release-please auth (App secrets or RELEASE_PLEASE_APP_TOKEN)
+- [ ] [P02-T04] Merge release-please PR → tag → verify `uvx identikit --version`
 
 ### Automated Verification
 - `make check` passes (uv + just present)

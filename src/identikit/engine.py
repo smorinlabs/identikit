@@ -22,6 +22,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 from identikit.common import Config, RenameOp, validate_value
+from identikit.rewriters import rewrite_structured
 
 Answers = dict[str, str]
 Runner = Callable[[list[str], Path], object]
@@ -161,19 +162,24 @@ def apply(
         report.removed.append(op.path)
 
     for op in config.replaces:
-        pair = (from_values[op.field], answers[op.field])
+        src, dst = from_values[op.field], answers[op.field]
         for f in op.files:
             target = root / f
             if not target.exists():
                 report.skipped.append(f"replace {f} (missing)")
                 continue
-            text = target.read_text(encoding="utf-8")
-            new_text = replace_in_text(text, [pair])
-            if new_text == text:
+            if op.mode == "structured":
+                changed = rewrite_structured(target, src, dst)
+            else:
+                text = target.read_text(encoding="utf-8")
+                new_text = replace_in_text(text, [(src, dst)])
+                changed = new_text != text
+                if changed:
+                    target.write_text(new_text, encoding="utf-8")
+            if changed:
+                report.replaced.append(f)
+            else:
                 report.skipped.append(f"replace {f} (no change)")
-                continue
-            target.write_text(new_text, encoding="utf-8")
-            report.replaced.append(f)
 
     for op in _resolve_renames(config.renames, answers):
         src = root / op.src

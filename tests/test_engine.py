@@ -157,5 +157,26 @@ def test_apply_skips_regenerate_when_target_missing(tmp_path):
     assert calls == []  # no uv.lock present → don't regenerate
 
 
+def test_apply_structured_mode_preserves_comments(tmp_path):
+    # structured mode must route TOML through tomlkit: value changes, comment stays.
+    cfg = common.Config(
+        identity={
+            "package_name": common.IdentityField(
+                "package_name", "py_launch_blueprint", "python_identifier"
+            )
+        },
+        replaces=(common.ReplaceOp("package_name", ("pyproject.toml",), "structured"),),
+    )
+    (tmp_path / "pyproject.toml").write_text(
+        "# keep py_launch_blueprint annotation\n"
+        '[project]\nname = "py_launch_blueprint"\n',
+        "utf-8",
+    )
+    engine.apply(cfg, {"package_name": "payments_api"}, root=tmp_path, runner=_no_run)
+    text = (tmp_path / "pyproject.toml").read_text("utf-8")
+    assert 'name = "payments_api"' in text
+    assert "# keep py_launch_blueprint annotation" in text  # comment untouched
+
+
 def _no_run(cmd, cwd):  # pragma: no cover - regenerate not exercised in these tests
     raise AssertionError("runner should not be called")
