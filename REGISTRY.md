@@ -106,7 +106,8 @@ Not on crates.io: `identikit-pylib`, `identikit-tslib` (no Rust presence).
 - **npm's unpublish window has closed.** It runs 72 hours from publish; these were reserved
   2026-08-25, so they are now effectively permanent too.
 - **The first real release must sort above the placeholder** in each ecosystem: npm above
-  `0.0.1`, PyPI above `0.0.0.dev0`, crates.io above `0.0.0`. The npm one is the trap —
-  `0.0.1` already outranks a naive first `0.0.1` or a `0.1.0-alpha` prerelease.
+  `0.0.1`, PyPI above `0.0.0.dev0`, crates.io above `0.0.0`. npm is the one to watch: its
+  placeholder already consumed `0.0.1`, so a first real release numbered `0.0.1` is rejected
+  as a duplicate. Start at `0.0.2` or `0.1.0`.
 - **The five sibling READMEs say "Intended registries."** That wording was written before the
   reservations ran. All reservations are now complete, so it can be updated to "Reserved on."
